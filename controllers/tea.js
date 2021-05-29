@@ -18,7 +18,7 @@ const newTea = async (req, res) => {
     if (tea === null) {
       const newTea = new Tea({
         name: req.body.name, 
-        image: req.file.path, 
+        image: req.file?.path ?? "uploads\\green.png", 
         description: req.body.description, 
         keywords: req.body.keywords, 
         origin: req.body.origin, 
@@ -32,6 +32,7 @@ const newTea = async (req, res) => {
       res.json({ message: "Tea already exists" });
     }
   } catch (error) {
+    console.log(error);
     res.json({ Error: error });
   }
 };
