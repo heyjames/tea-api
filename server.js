@@ -1,5 +1,3 @@
-// https://lo-victoria.com/build-rest-api-with-nodejs-design-and-plan-restful-api
-
 const express = require("express");
 const routes = require("./routes/tea");
 const mongoose = require("mongoose");
