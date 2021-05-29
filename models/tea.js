@@ -1,6 +1,5 @@
-const mongoose = require("mongoose"); //import mongoose
+const mongoose = require("mongoose");
 
-// tea schema
 const TeaSchema = new mongoose.Schema({
     name: { type: String, required: true },
     image: String,
@@ -13,4 +12,5 @@ const TeaSchema = new mongoose.Schema({
 });
 
 const Tea = mongoose.model("Tea", TeaSchema); // Convert to model named Tea
+
 module.exports = Tea; // Export for controllers/tea.js use

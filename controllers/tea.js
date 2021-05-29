@@ -1,101 +1,101 @@
 const Tea = require("../models/tea");
 
 // GET "/tea"
-const getAllTea = (req, res) => {
-  Tea.find({}, (err, data) => {
-    if (err) return res.json({Error: err});
-
-    return res.json(data);
-  });
+const getAllTea = async (req, res) => {
+  try {
+    const teas = await Tea.find({});
+    res.json(teas);
+  } catch (error) {
+    res.json({ Error: error });
+  }
 };
 
 // POST "/tea"
-const newTea = (req, res, next) => {
-  //check if the tea name already exists in db
-  Tea.findOne({ name:req.body.name }, (data) => {
-    //if tea not in db, add it
-    if (data === null) {
-      //create a new tea object using the Tea model and req.body
+const newTea = async (req, res) => {
+  try {
+    const tea = await Tea.findOne({ name: req.body.name });
+
+    if (tea === null) {
       const newTea = new Tea({
-          name:req.body.name,
-          image: req.file.path,
-          description: req.body.description,
-          keywords: req.body.keywords,
-          origin: req.body.origin,
-          brew_time: req.body.brew_time,
-          temperature: req.body.temperature,
+        name: req.body.name, 
+        image: req.file.path, 
+        description: req.body.description, 
+        keywords: req.body.keywords, 
+        origin: req.body.origin, 
+        brew_time: req.body.brew_time, 
+        temperature: req.body.temperature
       });
 
-      // save this object to database
-      newTea.save((err, data)=>{
-        if (err) return res.json({Error: err});
-        return res.json(data);
+      newTea.save();
+      res.json(newTea);
+    } else {
+      res.json({ message: "Tea already exists" });
+    }
+  } catch (error) {
+    res.json({ Error: error });
+  }
+};
+
+// DELETE "/tea"
+const deleteAllTea = async (req, res) => {
+  try {
+    await Tea.deleteMany({});
+    res.json({ message: "Complete delete successful" });
+  } catch (error) {
+    res.json({ Error: error });
+  }
+};
+
+// GET "/tea/:name"
+const getOneTea = async (req, res) => {
+  try {
+    const tea = await Tea.findOne({ name: req.params.name });
+
+    if (tea === null) {
+      res.json({ message: "Tea doesn't exist." });
+    } else {
+      res.json(tea);
+    }
+  } catch (error) {
+    res.json({ Error: error });
+  }
+};
+
+// POST "/tea/:name"
+const newComment = async (req, res) => {
+  try {
+    const tea = await Tea.findOne({ name: req.params.name });
+    
+    if (tea === null || !req.body.comment) {
+      res.json({ message: "Tea doesn't exist." });
+    } else {
+      tea.comments.push({
+        text: req.body.comment,
+        date: new Date()
       });
 
-    //if tea is in db, return a message to inform it exists            
-    } else {
-      return res.json({message:"Tea already exists"});
+      await tea.save();
+      res.json(tea);
     }
-  });
-};
-
-//DELETE '/tea'
-const deleteAllTea = (req, res, next) => {
-  res.json({message: "DELETE all tea"});
-};
-
-//GET '/tea/:name'
-const getOneTea = (req, res) => {
-  let name = req.params.name; //get the tea name
-
-  //find the specific tea with that name
-  Tea.findOne({name:name}, (err, data) => {
-  if(err || !data) {
-      return res.json({message: "Tea doesn't exist."});
+  } catch (error) {
+    res.json({ Error: error });
   }
-  else return res.json(data); //return the tea object if found
-  });
 };
 
-//POST '/tea/:name'
-const newComment = (req, res) => {
-  let name = req.params.name; //get the tea to add the comment in
-  let newComment = req.body.comment; //get the comment
-  //create a comment object to push
-  const comment = {
-      text: newComment,
-      date: new Date()
-  }
-  //find the tea object
-  Tea.findOne({name:name}, (err, data) => {
-      if(err || !data || !newComment) {
-          return res.json({message: "Tea doesn't exist."});
-      }
-      else {
-          //add comment to comments array of the tea object
-          data.comments.push(comment);
-          //save changes to db
-          data.save(err => {
-              if (err) { 
-              return res.json({message: "Comment failed to add.", error:err});
-              }
-              return res.json(data);
-          })  
-      } 
-  })
-};
+// DELETE "/tea/:name"
+const deleteOneTea = async (req, res) => {
+  try {
+    const tea = await Tea.findOne({ name: req.params.name });
 
-//DELETE '/tea/:name'
-const deleteOneTea = (req, res) => {
-  let name = req.params.name; // get the name of tea to delete
-
-  Tea.findOneAndDelete({name:name}, (err, data) => {
-    if (err || !data) {
-      return res.json({message: "Tea doesn't exist."});
+    if (tea === null) {
+      res.json({ message: "Tea doesn't exist." });
     } else {
-      return res.json({message: "Tea deleted."}); //deleted if found
+      await tea.deleteOne();
+      res.json({ message: "Tea deleted." });
     }
-  });
+  } catch (error) {
+    res.json({ Error: error });
+  }
 };
 
 // Export for routes/tea.js use
